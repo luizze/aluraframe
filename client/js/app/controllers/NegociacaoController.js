@@ -10,8 +10,17 @@ class NegociacaoController {
 
         this._negociacaoService = new NegociacaoService();
 
-        this._listaNegociacoes = new Bind(new ListaNegociacoes(), new NegociacoesView($('#negociacoesView')), 'adiciona', 'esvazia');
-        this._mensagem = new Bind(new Mensagem(), new MensagemView($('#mensagemView')), 'texto');
+        this._listaNegociacoes = new Bind(
+            new ListaNegociacoes(),
+            new NegociacoesView($('#negociacoesView')),
+            'adiciona', 'esvazia', 'ordena', 'inverteOrdem'
+        );
+
+        this._mensagem = new Bind(
+            new Mensagem(),
+            new MensagemView($('#mensagemView')),
+            'texto'
+        );
     }
 
     adiciona(event) {
@@ -42,6 +51,19 @@ class NegociacaoController {
     _criaNegociacao() {
 
         return new Negociacao(DateHelper.textoParaData(this._inputData.value), this._inputQuantidade.value, this._inputValor.value);
+    }
+
+    ordena(coluna) {
+
+        if (this._ordemAtual == coluna) {
+
+            this._listaNegociacoes.inverteOrdem();
+        } else {
+
+            this._listaNegociacoes.ordena((a, b) => a[coluna] - b[coluna]);
+        }
+
+        this._ordemAtual = coluna;
     }
 
     _limpaFormulario() {
