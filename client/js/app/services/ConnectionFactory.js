@@ -21,7 +21,12 @@ var ConnectionFactory = (function () {
 
                 openRequest.onupgradeneeded = e => {
 
-                    ConnectionFactory._createStores(e.target.result);
+                    if (!connection) {
+
+                        connection = e.target.result;
+                    }
+
+                    ConnectionFactory._createStores();
                 };
 
                 openRequest.onsuccess = e => {
@@ -37,7 +42,7 @@ var ConnectionFactory = (function () {
             });
         }
 
-        static _createStores(connection) {
+        static _createStores() {
 
             stores.forEach(store => {
 
