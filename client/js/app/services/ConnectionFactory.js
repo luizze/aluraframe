@@ -1,10 +1,12 @@
+
 var ConnectionFactory = (function () {
 
-    var stores = ['negociacoes'];
-    var dbName = 'aluraframe';
-    var version = 1;
+    const stores = ['negociacoes'];
+    const dbName = 'aluraframe';
+    const version = 2;
 
     var connection = null;
+    var close = null;
 
     return class ConnectionFactory {
 
@@ -21,15 +23,21 @@ var ConnectionFactory = (function () {
 
                 openRequest.onupgradeneeded = e => {
 
-                    if (!connection) {
-
-                        connection = e.target.result;
-                    }
-
-                    ConnectionFactory._createStores();
+                    ConnectionFactory._createStores(e.target.result);
                 };
 
                 openRequest.onsuccess = e => {
+
+                    if (!connection) {
+
+                        connection = e.target.result;
+                        close = connection.close.bind(connection);
+
+                        connection.close = function () {
+
+                            throw new Error('Não foi possivel fechar diretamente a connexão.');
+                        };
+                    }
 
                     resolve(e.target.result);
                 };
@@ -42,7 +50,7 @@ var ConnectionFactory = (function () {
             });
         }
 
-        static _createStores() {
+        static _createStores(connection) {
 
             stores.forEach(store => {
 
@@ -53,6 +61,16 @@ var ConnectionFactory = (function () {
 
                 connection.createObjectStore(store, { autoIncrement: true })
             });
+        }
+
+        static closeConnection() {
+
+            if (connection) {
+
+                close();
+                connection = null;
+                close = null;
+            }
         }
     }
 })();
